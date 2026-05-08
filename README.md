@@ -69,7 +69,7 @@ The app includes a small pattern-based normalization layer for Turkish or noisy 
 Example:
 
 ```text
-abi adam tek basina herkesi indiriyodu o vibe lazim
+abi adam tek başına herkesi indiriyodu o vibe lazım
 ```
 
 can be expanded toward:
@@ -95,15 +95,15 @@ The calm moment where the villain secretly controls the entire room while everyo
 ```
 
 ```text
-boyle zekasiyla ortami susturan karakterler
+böyle zekasıyla ortamı susturan karakterler
 ```
 
 ```text
-karanlik yagmurlu sehir dedektif hissi
+karanlık yağmurlu şehir dedektif hissi
 ```
 
 ```text
-icimi parcalayan veda sahnesi
+içimi parçalayan veda sahnesi
 ```
 
 ## Limitations
