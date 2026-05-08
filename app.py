@@ -37,13 +37,11 @@ st.write(
 
 if use_embeddings:
     st.caption("Semantic similarity mode is enabled.")
-else:
-    st.caption("Baseline TF-IDF similarity mode is enabled.")
 
 st.divider()
 
 st.subheader("Your favorite movies")
-st.caption("Use original English movie titles from the TMDB dataset, e.g. Now You See Me instead of local translated titles.")
+st.caption("Use original movie titles in English, for example: Now You See Me.")
 
 col1, col2, col3 = st.columns(3)
 
