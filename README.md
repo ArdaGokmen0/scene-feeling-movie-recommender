@@ -110,6 +110,7 @@ içimi parçalayan veda sahnesi
 
 - The dataset is limited to the TMDB 5000 movie dataset.
 - No TV series are included.
+- Movie title matching currently works best with original English titles. Localized titles such as Turkish release names may not be recognized.
 - Scene understanding is still rule-based and experimental.
 - Turkish support is pattern-based, not full translation.
 - Semantic mode can be slower on first load.

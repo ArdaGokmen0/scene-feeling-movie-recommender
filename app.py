@@ -43,6 +43,7 @@ else:
 st.divider()
 
 st.subheader("Your favorite movies")
+st.caption("Use original English movie titles from the TMDB dataset, e.g. Now You See Me instead of local translated titles.")
 
 col1, col2, col3 = st.columns(3)
 
