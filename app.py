@@ -33,6 +33,17 @@ def get_movie_suggestions(recommender, movie_title):
     return []
 
 
+def get_resolved_movie_title(recommender, movie_title):
+    try:
+        movie_index = recommender.find_movie_index(movie_title)
+        if movie_index is not None:
+            return recommender.df.iloc[movie_index]["title"]
+    except Exception:
+        return None
+
+    return None
+
+
 df = get_data()
 use_embeddings = st.sidebar.toggle("Use semantic similarity", value=False)
 recommender = get_recommender(df, use_embeddings)
@@ -107,6 +118,11 @@ if recommend_button:
                     st.info(f"Could not find '{movie_title}'. Try the original English TMDB title.")
         else:
             st.success(f"Matched movies: {', '.join(matched_movies)}")
+
+            for movie_title in favorite_movies:
+                resolved_title = get_resolved_movie_title(recommender, movie_title)
+                if resolved_title and movie_title.strip().lower() != resolved_title.lower():
+                    st.caption(f"Matched \"{movie_title}\" as \"{resolved_title}\".")
 
             for movie_title in unmatched_movies:
                 suggestions = get_movie_suggestions(recommender, movie_title)

@@ -13,6 +13,7 @@ class MovieRecommender:
         self.embedding_available = False
         self.movie_embeddings = None
         self.df["title_match_clean"] = self.df["title"].apply(self.normalize_movie_title)
+        self.df["title_match_key"] = self.df["title_match_clean"].apply(self.remove_leading_the)
 
         self.vectorizer = TfidfVectorizer(
             stop_words="english",
@@ -43,8 +44,58 @@ class MovieRecommender:
         title = re.sub(r"\s+", " ", title)
         return title.strip()
 
+    @staticmethod
+    def remove_leading_the(title):
+        return re.sub(r"^the\s+", "", title).strip()
+
+    @staticmethod
+    def get_title_tokens(title):
+        weak_tokens = {"the", "a", "an", "movie", "film", "part", "chapter", "episode"}
+        weak_character_tokens = {"man", "woman", "boy", "girl"}
+        strong_franchise_tokens = {"spider", "batman", "john", "wick", "dark", "knight"}
+
+        tokens = title.split()
+        has_strong_franchise_token = any(token in strong_franchise_tokens for token in tokens)
+
+        clean_tokens = []
+        for token in tokens:
+            if token in weak_tokens:
+                continue
+            if token in weak_character_tokens and not has_strong_franchise_token:
+                continue
+            clean_tokens.append(token)
+
+        return clean_tokens
+
+    def get_franchise_matches(self, title_clean):
+        tokens = set(title_clean.split())
+
+        if "spiderman" in title_clean.replace(" ", ""):
+            return self.df[self.df["title_match_clean"].str.contains("spider", na=False)]
+
+        if "spider" in tokens and "man" in tokens:
+            return self.df[self.df["title_match_clean"].str.contains("spider", na=False)]
+
+        if "dark" in tokens and "knight" in tokens:
+            return self.df[self.df["title_match_clean"].str.contains("dark knight", na=False)]
+
+        if "batman" in tokens:
+            return self.df[
+                self.df["title_match_clean"].str.contains("batman", na=False) |
+                self.df["title_match_clean"].str.contains("dark knight", na=False)
+            ]
+
+        if "john" in tokens and "wick" in tokens:
+            return self.df[
+                self.df["title_match_clean"].str.contains("john", na=False) &
+                self.df["title_match_clean"].str.contains("wick", na=False)
+            ]
+
+        return self.df.iloc[0:0]
+
     def find_movie_index(self, title):
         title_clean = self.normalize_movie_title(title)
+        title_key = self.remove_leading_the(title_clean)
 
         if not title_clean:
             return None
@@ -54,12 +105,16 @@ class MovieRecommender:
         if len(exact_matches) > 0:
             return exact_matches.index[0]
 
+        key_matches = self.df[self.df["title_match_key"] == title_key]
+
+        if len(key_matches) > 0:
+            return key_matches.index[0]
+
+        input_tokens = self.get_title_tokens(title_clean)
         partial_matches = self.df[
-            self.df["title_match_clean"].apply(
-                lambda movie_title: (
-                    len(title_clean) >= 4 and title_clean in movie_title
-                ) or (
-                    len(movie_title) >= 4 and movie_title in title_clean
+            self.df["title_match_key"].apply(
+                lambda movie_title: bool(input_tokens) and all(
+                    token in movie_title.split() for token in input_tokens
                 )
             )
         ]
@@ -67,11 +122,16 @@ class MovieRecommender:
         if len(partial_matches) > 0:
             return partial_matches.index[0]
 
-        title_options = self.df["title_match_clean"].tolist()
-        close_matches = difflib.get_close_matches(title_clean, title_options, n=1, cutoff=0.88)
+        franchise_matches = self.get_franchise_matches(title_clean)
+
+        if len(franchise_matches) > 0:
+            return franchise_matches.index[0]
+
+        title_options = self.df["title_match_key"].tolist()
+        close_matches = difflib.get_close_matches(title_key, title_options, n=1, cutoff=0.88)
 
         if close_matches:
-            fuzzy_matches = self.df[self.df["title_match_clean"] == close_matches[0]]
+            fuzzy_matches = self.df[self.df["title_match_key"] == close_matches[0]]
             if len(fuzzy_matches) > 0:
                 return fuzzy_matches.index[0]
 
@@ -79,17 +139,23 @@ class MovieRecommender:
 
     def suggest_movie_titles(self, title, limit=3):
         title_clean = self.normalize_movie_title(title)
+        title_key = self.remove_leading_the(title_clean)
 
         if not title_clean:
             return []
 
         suggestions = []
+
+        franchise_matches = self.get_franchise_matches(title_clean)
+        for movie_title in franchise_matches["title"].head(limit):
+            if movie_title not in suggestions:
+                suggestions.append(movie_title)
+
+        input_tokens = self.get_title_tokens(title_clean)
         partial_matches = self.df[
-            self.df["title_match_clean"].apply(
-                lambda movie_title: (
-                    len(title_clean) >= 4 and title_clean in movie_title
-                ) or (
-                    len(movie_title) >= 4 and movie_title in title_clean
+            self.df["title_match_key"].apply(
+                lambda movie_title: bool(input_tokens) and all(
+                    token in movie_title.split() for token in input_tokens
                 )
             )
         ]
@@ -98,11 +164,11 @@ class MovieRecommender:
             if movie_title not in suggestions:
                 suggestions.append(movie_title)
 
-        title_options = self.df["title_match_clean"].tolist()
-        close_matches = difflib.get_close_matches(title_clean, title_options, n=limit, cutoff=0.72)
+        title_options = self.df["title_match_key"].tolist()
+        close_matches = difflib.get_close_matches(title_key, title_options, n=limit, cutoff=0.72)
 
         for match in close_matches:
-            matched_title = self.df[self.df["title_match_clean"] == match]["title"].iloc[0]
+            matched_title = self.df[self.df["title_match_key"] == match]["title"].iloc[0]
             if matched_title not in suggestions:
                 suggestions.append(matched_title)
 
