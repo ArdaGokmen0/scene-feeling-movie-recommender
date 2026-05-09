@@ -185,6 +185,50 @@ def normalize_scene_text(scene_text: str) -> str:
                 "push-pull relationship dynamic, and enemies-to-lovers energy."
             ),
         },
+        {
+            "signals": [
+                "başka dünya", "baska dunya", "başka bir dünya", "baska bir dunya",
+                "ilk gördükleri an", "ilk gordukleri an", "keşfetmek istiyosun",
+                "kesfetmek istiyosun", "oraya gitmek istedim", "büyülenmek hissi",
+                "buyulenmek hissi", "her şeyi görmek istiyodum",
+                "her seyi gormek istiyodum", "dünyası aşırı iyiydi",
+                "dunyasi asiri iyiydi"
+            ],
+            "meaning": (
+                "A scene focused on awe, discovery, curiosity, and the emotional "
+                "excitement of entering a new world. This suggests exploration "
+                "curiosity, discovery feeling, childlike curiosity, and adventure wonder."
+            ),
+        },
+        {
+            "signals": [
+                "huzurlu hissettirdi", "sakin sahneydi", "yağmur yağıyodu",
+                "yagmur yagiyodu", "sarı ışık vardı", "sari isik vardi",
+                "çay koyuyodu", "cay koyuyodu", "güvende hissediyosun",
+                "guvende hissediyosun", "çok cozyydi", "cok cozyydi",
+                "içimi rahatlattı", "icimi rahatlatti"
+            ],
+            "meaning": (
+                "A calm and emotionally safe atmosphere focused on warmth, quiet "
+                "comfort, healing energy, and peaceful human connection. This "
+                "suggests cozy atmosphere, emotional safety, peaceful warmth, "
+                "and calm intimacy."
+            ),
+        },
+        {
+            "signals": [
+                "yağmurlu yalnız sokak", "yagmurlu yalniz sokak",
+                "sessiz apartman", "uzun suskunluk", "garip boşluk hissi",
+                "garip bosluk hissi", "hüzünlü ama huzurlu",
+                "huzunlu ama huzurlu", "yalnız ama rahatlatıcı",
+                "yalniz ama rahatlatici"
+            ],
+            "meaning": (
+                "A reflective and melancholic atmosphere built around emotional "
+                "distance, quiet loneliness, rainy urban mood, peaceful solitude, "
+                "and bittersweet emotional reflection."
+            ),
+        },
     ]
 
     meanings = []

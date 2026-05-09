@@ -33,7 +33,12 @@ def analyze_scene_text(scene_text: str) -> dict:
             "turns against"
         ],
         "heartbreak": ["heartbreak", "emotional separation", "separation", "sadness"],
-        "comfort": ["comforting", "comfort", "emotionally supports", "protects", "safe"],
+        "comfort": [
+            "comforting", "comfort", "emotionally supports", "protects", "safe",
+            "quiet comfort", "warmth", "peaceful human connection"
+        ],
+        "emotional healing": ["healing energy", "healing", "emotionally safe", "emotional safety"],
+        "cozy atmosphere": ["cozy atmosphere", "cozy", "peaceful warmth", "calm intimacy"],
         "crime": ["criminal mastermind", "crime", "criminal", "villain", "heist", "robbery", "mafia", "gangster", "murder"],
         "mystery": [
             "mystery", "dangerous mystery", "clue", "detective", "investigate",
@@ -43,12 +48,20 @@ def analyze_scene_text(scene_text: str) -> dict:
         "romantic tension": ["romantic tension", "teasing", "flirt", "flirting"],
         "unresolved attraction": ["unresolved attraction", "hide emotional attraction", "hidden attraction"],
         "emotional chemistry": ["emotional chemistry", "chemistry", "attraction"],
-        "slow burn intimacy": ["slow burn intimacy", "slow burn", "intimacy"],
+        "slow burn intimacy": ["slow burn intimacy", "slow burn"],
         "emotional hesitation": ["emotional hesitation", "hesitation", "cannot say anything"],
         "vulnerability": ["vulnerability", "vulnerable", "emotionally exposed"],
-        "loneliness": ["lonely", "isolated", "empty", "abandoned", "emotional emptiness"],
+        "loneliness": ["lonely", "isolated", "empty", "abandoned", "emotional emptiness", "quiet loneliness"],
+        "urban loneliness": ["urban loneliness", "rainy urban mood", "rainy streets", "quiet apartments"],
+        "peaceful solitude": ["peaceful solitude", "strangely comforting", "lonely but strangely comforting"],
+        "reflective melancholy": ["reflective melancholy", "melancholic", "emotional distance", "long pauses"],
         "lone wolf": ["lone-wolf", "one-versus-many", "one versus many", "many enemies", "unstoppable protagonist"],
-        "wonder": ["magical discovery", "awe", "wonder", "curiosity", "childlike excitement", "magical"],
+        "wonder": [
+            "magical discovery", "awe", "wonder", "curiosity", "childlike excitement",
+            "magical", "entering a new world", "adventure wonder"
+        ],
+        "magical discovery": ["discovery feeling", "emotional excitement of entering a new world", "new world"],
+        "exploration curiosity": ["exploration curiosity", "discovery", "exploration", "curiosity"],
         "freedom": ["liberation", "escapes", "escape", "oppressive", "freedom"],
         "psychological tension": ["tense", "pressure", "paranoia", "mind game", "psychological", "anxiety"],
         "underdog": [
@@ -68,7 +81,12 @@ def analyze_scene_text(scene_text: str) -> dict:
             "lonely", "city", "noir", "dangerous", "shadow", "grim"
         ],
         "emotional": ["cry", "sad", "emotional", "sacrifice", "loss", "grief"],
-        "bittersweet": ["heartbreak", "sadness", "emotional separation", "emotional release"],
+        "bittersweet": [
+            "heartbreak", "sadness", "emotional separation", "emotional release",
+            "bittersweet", "bittersweet emotional reflection"
+        ],
+        "peaceful": ["peaceful", "calm", "quiet comfort", "peaceful warmth"],
+        "melancholic": ["melancholic", "reflective", "quiet sadness", "emotional distance"],
         "suspenseful": ["suspense", "suspenseful", "tense", "waiting", "danger", "escape", "slowly uncovering"],
         "inspiring": ["inspiring", "hope", "triumph", "victory", "overcome"],
     }
