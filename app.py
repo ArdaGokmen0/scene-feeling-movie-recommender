@@ -146,7 +146,7 @@ def show_recommendations(recommender):
     original_scene_text = st.session_state.original_scene_text
     result_use_embeddings = st.session_state.result_use_embeddings
 
-    st.subheader("Top 5 Recommendations")
+    st.subheader("Recommendations")
 
     for slot_index, candidate_index in enumerate(list(visible_indices)):
         row = recommendations.iloc[candidate_index]
