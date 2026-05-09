@@ -32,7 +32,7 @@ def analyze_scene_text(scene_text: str) -> dict:
             "deceived", "deception", "corrupt", "trust collapses",
             "turns against"
         ],
-        "heartbreak": ["heartbreak", "emotional separation", "separation", "sadness", "vulnerability"],
+        "heartbreak": ["heartbreak", "emotional separation", "separation", "sadness"],
         "comfort": ["comforting", "comfort", "emotionally supports", "protects", "safe"],
         "crime": ["criminal mastermind", "crime", "criminal", "villain", "heist", "robbery", "mafia", "gangster", "murder"],
         "mystery": [
@@ -40,7 +40,14 @@ def analyze_scene_text(scene_text: str) -> dict:
             "investigation", "case", "secret", "twist", "puzzle", "uncovering"
         ],
         "romance": ["love", "romance", "romantic", "kiss", "relationship", "heartbreak"],
-        "loneliness": ["lonely", "alone", "isolated", "empty", "abandoned"],
+        "romantic tension": ["romantic tension", "teasing", "flirt", "flirting"],
+        "unresolved attraction": ["unresolved attraction", "hide emotional attraction", "hidden attraction"],
+        "emotional chemistry": ["emotional chemistry", "chemistry", "attraction"],
+        "slow burn intimacy": ["slow burn intimacy", "slow burn", "intimacy"],
+        "emotional hesitation": ["emotional hesitation", "hesitation", "cannot say anything"],
+        "vulnerability": ["vulnerability", "vulnerable", "emotionally exposed"],
+        "loneliness": ["lonely", "isolated", "empty", "abandoned", "emotional emptiness"],
+        "lone wolf": ["lone-wolf", "one-versus-many", "one versus many", "many enemies", "unstoppable protagonist"],
         "wonder": ["magical discovery", "awe", "wonder", "curiosity", "childlike excitement", "magical"],
         "freedom": ["liberation", "escapes", "escape", "oppressive", "freedom"],
         "psychological tension": ["tense", "pressure", "paranoia", "mind game", "psychological", "anxiety"],
@@ -84,6 +91,8 @@ def analyze_scene_text(scene_text: str) -> dict:
             "forced to work together", "team up", "alliance", "competition",
             "challenge", "face off"
         ],
+        "push-pull relationship": ["push-pull", "push-pull relationship", "teasing", "emotional hesitation"],
+        "enemies-to-lovers": ["enemies-to-lovers", "enemies to lovers", "teasing", "hidden attraction"],
     }
 
     # Check whether any keyword appears in the scene text.
@@ -107,6 +116,17 @@ def analyze_scene_text(scene_text: str) -> dict:
     if any(keyword in text for keyword in manipulation_keywords):
         add_tag("motifs", "competence fantasy")
         add_tag("motifs", "power fantasy")
+        add_tag("character_dynamics", "social dominance")
+
+    # One-versus-many action is a power signal, not melancholic loneliness.
+    one_vs_many_keywords = [
+        "lone-wolf", "one-versus-many", "one versus many", "many enemies",
+        "unstoppable protagonist", "fight against many"
+    ]
+    if any(keyword in text for keyword in one_vs_many_keywords):
+        add_tag("motifs", "lone wolf")
+        add_tag("motifs", "power fantasy")
+        add_tag("motifs", "competence fantasy")
         add_tag("character_dynamics", "social dominance")
 
     # Dark investigations should connect mystery with suspense, not only crime.

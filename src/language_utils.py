@@ -16,8 +16,8 @@ def normalize_scene_text(scene_text: str) -> str:
                 "indiriyordu", "indiriyodu"
             ],
             "meaning": (
-                "A lone protagonist fights many enemies alone. This suggests "
-                "one-versus-many action, power fantasy, unstoppable protagonist "
+                "A lone-wolf protagonist enters a one-versus-many fight against "
+                "many enemies. This suggests power fantasy, unstoppable protagonist "
                 "energy, dominance, and competence fantasy."
             ),
         },
@@ -166,6 +166,23 @@ def normalize_scene_text(scene_text: str) -> str:
             "meaning": (
                 "A liberation scene where a character escapes an oppressive "
                 "situation and feels emotional freedom."
+            ),
+        },
+        {
+            "signals": [
+                "birbirlerinden hoşlanıyorlar", "birbirlerinden hoslaniyorlar",
+                "hoşlanıyolar", "hoslaniyolar", "laf sokuyorlar",
+                "laf sokuyolar", "bakışıyorlar", "bakisiyorlar",
+                "bakışıyolar", "bakisiyolar", "bir şey diyemiyorlar",
+                "bir sey diyemiyorlar", "bişey diyemiyo", "bisey diyemiyo",
+                "duygusal gerilim", "sürekli tersleşiyorlar",
+                "surekli terslesiyorlar", "seviyorlar ama belli etmiyorlar"
+            ],
+            "meaning": (
+                "A romantic tension scene where two characters hide emotional "
+                "attraction behind teasing, emotional hesitation, and unresolved "
+                "chemistry. This suggests slow burn intimacy, vulnerability, "
+                "push-pull relationship dynamic, and enemies-to-lovers energy."
             ),
         },
     ]
