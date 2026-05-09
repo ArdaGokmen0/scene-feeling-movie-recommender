@@ -63,14 +63,21 @@ def analyze_scene_text(scene_text: str) -> dict:
         "magical discovery": ["discovery feeling", "emotional excitement of entering a new world", "new world"],
         "exploration curiosity": ["exploration curiosity", "discovery", "exploration", "curiosity"],
         "freedom": ["liberation", "escapes", "escape", "oppressive", "freedom"],
-        "psychological tension": ["tense", "pressure", "paranoia", "mind game", "psychological", "anxiety"],
+        "psychological tension": [
+            "tense", "pressure", "paranoia", "mind game", "psychological",
+            "anxiety", "subtle psychological tension"
+        ],
+        "subtle menace": ["subtle menace", "quiet menace", "hidden sense of danger"],
+        "controlled danger": ["controlled danger", "calm and controlled", "hidden sense of danger"],
+        "slow-burn suspense": ["slow-burn suspense", "slow burn suspense", "slowly reveals"],
+        "emotional unease": ["emotional unease", "unease", "disturbing calmness"],
         "underdog": [
             "underdog", "underestimated", "nobody believed", "proves everyone wrong",
             "prove everyone wrong", "prove them wrong", "trains", "training",
             "final competition", "tournament", "champion"
         ],
         "power fantasy": [
-            "powerful", "unstoppable", "dominates", "control", "controls",
+            "powerful", "unstoppable", "dominates", "controls",
             "manipulate", "manipulates", "manipulation", "influence", "fearless"
         ],
     }
@@ -85,8 +92,9 @@ def analyze_scene_text(scene_text: str) -> dict:
             "heartbreak", "sadness", "emotional separation", "emotional release",
             "bittersweet", "bittersweet emotional reflection"
         ],
-        "peaceful": ["peaceful", "calm", "quiet comfort", "peaceful warmth"],
+        "peaceful": ["peaceful", "quiet comfort", "peaceful warmth"],
         "melancholic": ["melancholic", "reflective", "quiet sadness", "emotional distance"],
+        "emotional tension": ["emotional tension", "emotional unease", "quiet menace"],
         "suspenseful": ["suspense", "suspenseful", "tense", "waiting", "danger", "escape", "slowly uncovering"],
         "inspiring": ["inspiring", "hope", "triumph", "victory", "overcome"],
     }
@@ -95,7 +103,7 @@ def analyze_scene_text(scene_text: str) -> dict:
         "social dominance": [
             "dominates", "humiliates", "shocks everyone", "proves", "impresses",
             "commands respect", "manipulate", "manipulates", "manipulation",
-            "control", "controls", "behind the scenes", "mastermind", "scheme",
+            "controls", "behind the scenes", "mastermind", "scheme",
             "puppet", "influence"
         ],
         "loyalty": [
@@ -111,6 +119,8 @@ def analyze_scene_text(scene_text: str) -> dict:
         ],
         "push-pull relationship": ["push-pull", "push-pull relationship", "teasing", "emotional hesitation"],
         "enemies-to-lovers": ["enemies-to-lovers", "enemies to lovers", "teasing", "hidden attraction"],
+        "quiet dominance": ["quiet dominance", "calm and controlled", "controlled character"],
+        "silent intimidation": ["silent intimidation", "quiet menace", "without loud conflict"],
     }
 
     # Check whether any keyword appears in the scene text.
@@ -128,7 +138,7 @@ def analyze_scene_text(scene_text: str) -> dict:
 
     # Manipulation/control scenes often imply both competence and dominance.
     manipulation_keywords = [
-        "manipulate", "manipulates", "manipulation", "control", "controls",
+        "manipulate", "manipulates", "manipulation", "controls",
         "behind the scenes", "mastermind", "scheme", "puppet", "influence"
     ]
     if any(keyword in text for keyword in manipulation_keywords):

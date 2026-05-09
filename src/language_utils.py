@@ -229,6 +229,28 @@ def normalize_scene_text(scene_text: str) -> str:
                 "and bittersweet emotional reflection."
             ),
         },
+        {
+            "signals": [
+                "alttan alta gerilim", "rahatsız edici gerilim",
+                "rahatsiz edici gerilim", "huzursuz edici",
+                "dışarıdan sakin ama tehlikeli", "disaridan sakin ama tehlikeli",
+                "kontrollü gözüküp tehlikeli", "kontrollu gozukup tehlikeli",
+                "tehlikeli olduğunu yavaş yavaş hissettirdi",
+                "tehlikeli oldugunu yavas yavas hissettirdi",
+                "bağırmadan gerilim", "bagirmadan gerilim",
+                "bakışlarla gerilim", "bakislarla gerilim",
+                "sessiz tehdit", "sakin ama korkutucu", "sakin ama tehlikeli",
+                "konuşmadan gerilim", "konusmadan gerilim",
+                "psikolojik baskı", "psikolojik baski", "gizli tehdit",
+                "tekinsiz sakinlik"
+            ],
+            "meaning": (
+                "A subtle psychological tension scene where a calm and controlled "
+                "character slowly reveals a hidden sense of danger. The scene "
+                "creates quiet menace, emotional unease, silent intimidation, "
+                "controlled danger, and slow-burn suspense without loud conflict."
+            ),
+        },
     ]
 
     meanings = []
