@@ -57,7 +57,7 @@ st.write(
 )
 
 if use_embeddings:
-    st.caption("Semantic similarity mode is enabled.")
+    st.caption("Semantic mode is on, so recommendations can use meaning-based similarity.")
 
 st.divider()
 
@@ -90,7 +90,7 @@ if recommend_button:
     favorite_movies = [m for m in favorite_movies if m.strip()]
 
     if len(favorite_movies) < 3:
-        st.warning("Please enter 3 favorite movies.")
+        st.warning("Add 3 favorite movies to get recommendations.")
     else:
         normalized_scene_text = normalize_scene_text(scene_text) if scene_text.strip() else scene_text
         scene_analysis = analyze_scene_text(normalized_scene_text) if normalized_scene_text.strip() else None
@@ -108,16 +108,16 @@ if recommend_button:
                 unmatched_movies.append(movie_title)
 
         if len(matched_movies) == 0:
-            st.error("None of the movies were found in the dataset. Try more popular English movie titles.")
+            st.error("I could not find any of those movies. Try original English movie titles.")
 
             for movie_title in unmatched_movies:
                 suggestions = get_movie_suggestions(recommender, movie_title)
                 if suggestions:
-                    st.info(f"Could not find '{movie_title}'. Did you mean: {', '.join(suggestions)}?")
+                    st.info(f"I could not find \"{movie_title}\". Try one of these: {', '.join(suggestions)}.")
                 else:
-                    st.info(f"Could not find '{movie_title}'. Try the original English TMDB title.")
+                    st.info(f"I could not find \"{movie_title}\". Try another original English movie title.")
         else:
-            st.success(f"Matched movies: {', '.join(matched_movies)}")
+            st.success(f"Using these movies: {', '.join(matched_movies)}")
 
             for movie_title in favorite_movies:
                 resolved_title = get_resolved_movie_title(recommender, movie_title)
@@ -127,9 +127,9 @@ if recommend_button:
             for movie_title in unmatched_movies:
                 suggestions = get_movie_suggestions(recommender, movie_title)
                 if suggestions:
-                    st.info(f"Could not find '{movie_title}'. Did you mean: {', '.join(suggestions)}?")
+                    st.info(f"I could not find \"{movie_title}\". Try one of these: {', '.join(suggestions)}.")
                 else:
-                    st.info(f"Could not find '{movie_title}'. Try the original English TMDB title.")
+                    st.info(f"I could not find \"{movie_title}\". Try another original English movie title.")
 
             if scene_text.strip():
                 st.subheader("Scene Analysis")
@@ -152,7 +152,7 @@ if recommend_button:
                         "These signals help the recommender look for movies with a similar emotional or motif-based appeal, "
                         "not just similar genres."
                     )
-                    st.info("A small scene-based bonus is now included while keeping the original movie similarity system.")
+                    st.info("Your scene description adds a small supporting signal; your favorite movies still guide the main recommendations.")
                 else:
                     st.info("No clear scene motifs detected yet. Try describing the scene with more detail.")
 
@@ -184,14 +184,14 @@ if recommend_button:
                         scene_motifs = ", ".join(scene_analysis["motifs"])
                         st.caption(
                             f"Scene motifs detected: {scene_motifs}. "
-                            "These motifs are used as a small bonus in the recommendation score."
+                            "They gently support the recommendation, but do not override your favorite movies."
                         )
 
                     if scene_analysis and any(scene_analysis.values()):
-                        st.caption(f"Scene bonus: {row['scene_bonus']:.2f}")
+                        st.caption(f"Scene feeling match: {row['scene_bonus']:.2f}")
 
                     if use_embeddings and scene_text.strip():
-                        st.caption(f"Scene semantic similarity: {row['scene_semantic_similarity']:.2f}")
+                        st.caption(f"Meaning-based scene match: {row['scene_semantic_similarity']:.2f}")
 
                     st.caption(
                         f"Rating: {row['vote_average']} | Popularity: {round(row['popularity'], 2)}"
