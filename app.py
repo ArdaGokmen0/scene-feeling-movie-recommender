@@ -23,6 +23,16 @@ def get_recommender(df, use_embeddings):
     return MovieRecommender(df, use_embeddings=use_embeddings)
 
 
+def get_movie_suggestions(recommender, movie_title):
+    try:
+        if hasattr(recommender, "suggest_movie_titles"):
+            return recommender.suggest_movie_titles(movie_title)
+    except Exception:
+        return []
+
+    return []
+
+
 df = get_data()
 use_embeddings = st.sidebar.toggle("Use semantic similarity", value=False)
 recommender = get_recommender(df, use_embeddings)
@@ -90,14 +100,16 @@ if recommend_button:
             st.error("None of the movies were found in the dataset. Try more popular English movie titles.")
 
             for movie_title in unmatched_movies:
-                suggestions = recommender.suggest_movie_titles(movie_title)
+                suggestions = get_movie_suggestions(recommender, movie_title)
                 if suggestions:
                     st.info(f"Could not find '{movie_title}'. Did you mean: {', '.join(suggestions)}?")
+                else:
+                    st.info(f"Could not find '{movie_title}'. Try the original English TMDB title.")
         else:
             st.success(f"Matched movies: {', '.join(matched_movies)}")
 
             for movie_title in unmatched_movies:
-                suggestions = recommender.suggest_movie_titles(movie_title)
+                suggestions = get_movie_suggestions(recommender, movie_title)
                 if suggestions:
                     st.info(f"Could not find '{movie_title}'. Did you mean: {', '.join(suggestions)}?")
                 else:
