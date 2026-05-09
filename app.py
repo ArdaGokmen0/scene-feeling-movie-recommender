@@ -23,6 +23,34 @@ def get_recommender(df, use_embeddings):
     return MovieRecommender(df, use_embeddings=use_embeddings)
 
 
+@st.cache_data
+def get_movie_options(_df):
+    option_df = _df.copy()
+
+    if "vote_count" in option_df.columns:
+        option_df["is_reliable"] = option_df["vote_count"].fillna(0) >= 100
+        option_df = option_df.sort_values(
+            ["is_reliable", "vote_average", "popularity"],
+            ascending=[False, False, False]
+        )
+    else:
+        option_df = option_df.sort_values(
+            ["vote_average", "popularity"],
+            ascending=[False, False]
+        )
+
+    option_df = option_df.drop_duplicates(subset=["title"], keep="first")
+
+    movie_options = {}
+    for _, row in option_df.iterrows():
+        year = f" ({row['year']})" if row["year"] else ""
+        rating = row["vote_average"] if row["vote_average"] else 0
+        label = f"{row['title']}{year} - {rating:.1f}"
+        movie_options[label] = row["title"]
+
+    return movie_options
+
+
 def get_movie_suggestions(recommender, movie_title):
     try:
         if hasattr(recommender, "suggest_movie_titles"):
@@ -45,6 +73,7 @@ def get_resolved_movie_title(recommender, movie_title):
 
 
 df = get_data()
+movie_options = get_movie_options(df)
 use_embeddings = st.sidebar.toggle("Use semantic similarity", value=False)
 recommender = get_recommender(df, use_embeddings)
 
@@ -62,18 +91,13 @@ if use_embeddings:
 st.divider()
 
 st.subheader("Your favorite movies")
-st.caption("Use original movie titles in English, for example: Now You See Me.")
+st.caption("Search and choose movies that exist in the dataset.")
 
-col1, col2, col3 = st.columns(3)
-
-with col1:
-    movie_1 = st.text_input("Favorite movie 1", placeholder="Example: Inception")
-
-with col2:
-    movie_2 = st.text_input("Favorite movie 2", placeholder="Example: Interstellar")
-
-with col3:
-    movie_3 = st.text_input("Favorite movie 3", placeholder="Example: The Dark Knight")
+selected_movie_labels = st.multiselect(
+    "Choose exactly 3 favorite movies from the dataset",
+    options=list(movie_options.keys()),
+    placeholder="Search movies..."
+)
 
 
 scene_text = st.text_area(
@@ -86,11 +110,12 @@ recommend_button = st.button("Recommend movies")
 
 
 if recommend_button:
-    favorite_movies = [movie_1, movie_2, movie_3]
-    favorite_movies = [m for m in favorite_movies if m.strip()]
+    favorite_movies = [movie_options[label] for label in selected_movie_labels]
 
     if len(favorite_movies) < 3:
-        st.warning("Add 3 favorite movies to get recommendations.")
+        st.warning("Choose exactly 3 favorite movies to get recommendations.")
+    elif len(favorite_movies) > 3:
+        st.warning("Choose only 3 favorite movies so the recommender has a focused taste profile.")
     else:
         normalized_scene_text = normalize_scene_text(scene_text) if scene_text.strip() else scene_text
         scene_analysis = analyze_scene_text(normalized_scene_text) if normalized_scene_text.strip() else None
