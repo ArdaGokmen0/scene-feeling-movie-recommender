@@ -1,3 +1,6 @@
+import difflib
+import re
+
 import numpy as np
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
@@ -9,6 +12,7 @@ class MovieRecommender:
         self.use_embeddings = use_embeddings
         self.embedding_available = False
         self.movie_embeddings = None
+        self.df["title_match_clean"] = self.df["title"].apply(self.normalize_movie_title)
 
         self.vectorizer = TfidfVectorizer(
             stop_words="english",
@@ -32,20 +36,77 @@ class MovieRecommender:
                 self.embedding_available = False
                 self.movie_embeddings = None
 
-    def find_movie_index(self, title):
-        title_clean = title.lower().strip()
+    @staticmethod
+    def normalize_movie_title(title):
+        title = str(title).lower().strip()
+        title = re.sub(r"[:\-'.,!?()]", " ", title)
+        title = re.sub(r"\s+", " ", title)
+        return title.strip()
 
-        exact_matches = self.df[self.df["title_clean"] == title_clean]
+    def find_movie_index(self, title):
+        title_clean = self.normalize_movie_title(title)
+
+        if not title_clean:
+            return None
+
+        exact_matches = self.df[self.df["title_match_clean"] == title_clean]
 
         if len(exact_matches) > 0:
             return exact_matches.index[0]
 
-        partial_matches = self.df[self.df["title_clean"].str.contains(title_clean, na=False)]
+        partial_matches = self.df[
+            self.df["title_match_clean"].apply(
+                lambda movie_title: (
+                    len(title_clean) >= 4 and title_clean in movie_title
+                ) or (
+                    len(movie_title) >= 4 and movie_title in title_clean
+                )
+            )
+        ]
 
         if len(partial_matches) > 0:
             return partial_matches.index[0]
 
+        title_options = self.df["title_match_clean"].tolist()
+        close_matches = difflib.get_close_matches(title_clean, title_options, n=1, cutoff=0.88)
+
+        if close_matches:
+            fuzzy_matches = self.df[self.df["title_match_clean"] == close_matches[0]]
+            if len(fuzzy_matches) > 0:
+                return fuzzy_matches.index[0]
+
         return None
+
+    def suggest_movie_titles(self, title, limit=3):
+        title_clean = self.normalize_movie_title(title)
+
+        if not title_clean:
+            return []
+
+        suggestions = []
+        partial_matches = self.df[
+            self.df["title_match_clean"].apply(
+                lambda movie_title: (
+                    len(title_clean) >= 4 and title_clean in movie_title
+                ) or (
+                    len(movie_title) >= 4 and movie_title in title_clean
+                )
+            )
+        ]
+
+        for movie_title in partial_matches["title"].head(limit):
+            if movie_title not in suggestions:
+                suggestions.append(movie_title)
+
+        title_options = self.df["title_match_clean"].tolist()
+        close_matches = difflib.get_close_matches(title_clean, title_options, n=limit, cutoff=0.72)
+
+        for match in close_matches:
+            matched_title = self.df[self.df["title_match_clean"] == match]["title"].iloc[0]
+            if matched_title not in suggestions:
+                suggestions.append(matched_title)
+
+        return suggestions[:limit]
 
     def calculate_scene_bonus(self, movie_row, scene_analysis):
         if not scene_analysis or not any(scene_analysis.values()):

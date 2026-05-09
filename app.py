@@ -81,10 +81,27 @@ if recommend_button:
             scene_text=normalized_scene_text
         )
 
+        unmatched_movies = []
+        for movie_title in favorite_movies:
+            if recommender.find_movie_index(movie_title) is None:
+                unmatched_movies.append(movie_title)
+
         if len(matched_movies) == 0:
             st.error("None of the movies were found in the dataset. Try more popular English movie titles.")
+
+            for movie_title in unmatched_movies:
+                suggestions = recommender.suggest_movie_titles(movie_title)
+                if suggestions:
+                    st.info(f"Could not find '{movie_title}'. Did you mean: {', '.join(suggestions)}?")
         else:
             st.success(f"Matched movies: {', '.join(matched_movies)}")
+
+            for movie_title in unmatched_movies:
+                suggestions = recommender.suggest_movie_titles(movie_title)
+                if suggestions:
+                    st.info(f"Could not find '{movie_title}'. Did you mean: {', '.join(suggestions)}?")
+                else:
+                    st.info(f"Could not find '{movie_title}'. Try the original English TMDB title.")
 
             if scene_text.strip():
                 st.subheader("Scene Analysis")
