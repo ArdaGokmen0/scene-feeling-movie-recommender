@@ -72,6 +72,131 @@ def get_resolved_movie_title(recommender, movie_title):
     return None
 
 
+def clear_recommendation_state():
+    for key in [
+        "recommendations",
+        "visible_indices",
+        "dismissed_indices",
+        "next_replacement_index",
+        "matched_movies",
+        "scene_analysis",
+        "normalized_scene_text",
+        "original_scene_text",
+        "result_use_embeddings",
+        "end_of_recommendations",
+    ]:
+        st.session_state.pop(key, None)
+
+
+def dismiss_recommendation(candidate_index, slot_index):
+    st.session_state.dismissed_indices.append(candidate_index)
+
+    next_index = st.session_state.next_replacement_index
+    recommendations = st.session_state.recommendations
+
+    while next_index < len(recommendations) and next_index in st.session_state.dismissed_indices:
+        next_index += 1
+
+    if next_index < len(recommendations):
+        st.session_state.visible_indices[slot_index] = next_index
+        st.session_state.next_replacement_index = next_index + 1
+    else:
+        st.session_state.visible_indices.pop(slot_index)
+        st.session_state.next_replacement_index = next_index
+        st.session_state.end_of_recommendations = True
+
+
+def show_scene_analysis(scene_analysis, normalized_scene_text, original_scene_text):
+    if not original_scene_text.strip():
+        return
+
+    st.subheader("Scene Analysis")
+
+    if normalized_scene_text != original_scene_text:
+        st.caption("Normalized scene meaning:")
+        st.write(normalized_scene_text)
+
+    has_scene_tags = any(scene_analysis.values())
+
+    if has_scene_tags:
+        motifs = ", ".join(scene_analysis["motifs"]) or "None detected"
+        tone = ", ".join(scene_analysis["tone"]) or "None detected"
+        character_dynamics = ", ".join(scene_analysis["character_dynamics"]) or "None detected"
+
+        st.write(f"**Motifs:** {motifs}")
+        st.write(f"**Tone:** {tone}")
+        st.write(f"**Character dynamics:** {character_dynamics}")
+        st.write(
+            "These signals help the recommender look for movies with a similar emotional or motif-based appeal, "
+            "not just similar genres."
+        )
+        st.info("Your scene description adds a small supporting signal; your favorite movies still guide the main recommendations.")
+    else:
+        st.info("No clear scene motifs detected yet. Try describing the scene with more detail.")
+
+
+def show_recommendations(recommender):
+    if "recommendations" not in st.session_state:
+        return
+
+    recommendations = st.session_state.recommendations
+    visible_indices = st.session_state.visible_indices
+    scene_analysis = st.session_state.scene_analysis
+    matched_movies = st.session_state.matched_movies
+    original_scene_text = st.session_state.original_scene_text
+    result_use_embeddings = st.session_state.result_use_embeddings
+
+    st.subheader("Top 5 Recommendations")
+
+    for slot_index, candidate_index in enumerate(list(visible_indices)):
+        row = recommendations.iloc[candidate_index]
+
+        with st.container(border=True):
+            title_line = row["title"]
+
+            if row["year"]:
+                title_line += f" ({row['year']})"
+
+            st.markdown(f"### {title_line}")
+
+            genres = ", ".join(row["genre_list"])
+            if genres:
+                st.caption(genres)
+
+            st.write(row["overview"])
+
+            st.markdown("**Why recommended:**")
+
+            reasons = recommender.generate_baseline_reason(row, matched_movies)
+
+            for reason in reasons:
+                st.markdown(f"- {reason}")
+
+            if scene_analysis and scene_analysis["motifs"]:
+                scene_motifs = ", ".join(scene_analysis["motifs"])
+                st.caption(
+                    f"Scene motifs detected: {scene_motifs}. "
+                    "They gently support the recommendation, but do not override your favorite movies."
+                )
+
+            if scene_analysis and any(scene_analysis.values()):
+                st.caption(f"Scene feeling match: {row['scene_bonus']:.2f}")
+
+            if result_use_embeddings and original_scene_text.strip():
+                st.caption(f"Meaning-based scene match: {row['scene_semantic_similarity']:.2f}")
+
+            st.caption(
+                f"Rating: {row['vote_average']} | Popularity: {round(row['popularity'], 2)}"
+            )
+
+            if st.button("I've watched this film", key=f"watched_{candidate_index}_{row['title']}"):
+                dismiss_recommendation(candidate_index, slot_index)
+                st.rerun()
+
+    if st.session_state.end_of_recommendations:
+        st.info("We've reached the end of the recommendation list for this search.")
+
+
 df = get_data()
 movie_options = get_movie_options(df)
 use_embeddings = st.sidebar.toggle("Use semantic similarity", value=False)
@@ -107,11 +232,22 @@ scene_text = st.text_area(
 )
 
 recommend_button = st.button("Recommend movies")
+favorite_movies = [movie_options[label] for label in selected_movie_labels]
+search_signature = (
+    tuple(favorite_movies),
+    scene_text,
+    use_embeddings,
+)
+
+if (
+    "search_signature" in st.session_state and
+    st.session_state.search_signature != search_signature
+):
+    clear_recommendation_state()
+    st.session_state.pop("search_signature", None)
 
 
 if recommend_button:
-    favorite_movies = [movie_options[label] for label in selected_movie_labels]
-
     if len(favorite_movies) < 3:
         st.warning("Choose exactly 3 favorite movies to get recommendations.")
     elif len(favorite_movies) > 3:
@@ -122,102 +258,34 @@ if recommend_button:
 
         recommendations, matched_movies = recommender.recommend_from_favorites(
             favorite_movies,
-            top_n=5,
+            top_n=15,
             scene_analysis=scene_analysis,
             scene_text=normalized_scene_text
         )
 
-        unmatched_movies = []
-        for movie_title in favorite_movies:
-            if recommender.find_movie_index(movie_title) is None:
-                unmatched_movies.append(movie_title)
-
         if len(matched_movies) == 0:
             st.error("I could not find any of those movies. Try original English movie titles.")
-
-            for movie_title in unmatched_movies:
-                suggestions = get_movie_suggestions(recommender, movie_title)
-                if suggestions:
-                    st.info(f"I could not find \"{movie_title}\". Try one of these: {', '.join(suggestions)}.")
-                else:
-                    st.info(f"I could not find \"{movie_title}\". Try another original English movie title.")
         else:
+            clear_recommendation_state()
+            recommendations = recommendations.reset_index(drop=True)
+            st.session_state.recommendations = recommendations
+            st.session_state.visible_indices = list(range(min(5, len(recommendations))))
+            st.session_state.dismissed_indices = []
+            st.session_state.next_replacement_index = min(5, len(recommendations))
+            st.session_state.matched_movies = matched_movies
+            st.session_state.scene_analysis = scene_analysis
+            st.session_state.normalized_scene_text = normalized_scene_text
+            st.session_state.original_scene_text = scene_text
+            st.session_state.result_use_embeddings = use_embeddings
+            st.session_state.end_of_recommendations = False
+            st.session_state.search_signature = search_signature
+
             st.success(f"Using these movies: {', '.join(matched_movies)}")
 
-            for movie_title in favorite_movies:
-                resolved_title = get_resolved_movie_title(recommender, movie_title)
-                if resolved_title and movie_title.strip().lower() != resolved_title.lower():
-                    st.caption(f"Matched \"{movie_title}\" as \"{resolved_title}\".")
-
-            for movie_title in unmatched_movies:
-                suggestions = get_movie_suggestions(recommender, movie_title)
-                if suggestions:
-                    st.info(f"I could not find \"{movie_title}\". Try one of these: {', '.join(suggestions)}.")
-                else:
-                    st.info(f"I could not find \"{movie_title}\". Try another original English movie title.")
-
-            if scene_text.strip():
-                st.subheader("Scene Analysis")
-
-                if normalized_scene_text != scene_text:
-                    st.caption("Normalized scene meaning:")
-                    st.write(normalized_scene_text)
-
-                has_scene_tags = any(scene_analysis.values())
-
-                if has_scene_tags:
-                    motifs = ", ".join(scene_analysis["motifs"]) or "None detected"
-                    tone = ", ".join(scene_analysis["tone"]) or "None detected"
-                    character_dynamics = ", ".join(scene_analysis["character_dynamics"]) or "None detected"
-
-                    st.write(f"**Motifs:** {motifs}")
-                    st.write(f"**Tone:** {tone}")
-                    st.write(f"**Character dynamics:** {character_dynamics}")
-                    st.write(
-                        "These signals help the recommender look for movies with a similar emotional or motif-based appeal, "
-                        "not just similar genres."
-                    )
-                    st.info("Your scene description adds a small supporting signal; your favorite movies still guide the main recommendations.")
-                else:
-                    st.info("No clear scene motifs detected yet. Try describing the scene with more detail.")
-
-            st.subheader("Top 5 Recommendations")
-
-            for _, row in recommendations.iterrows():
-                with st.container(border=True):
-                    title_line = row["title"]
-
-                    if row["year"]:
-                        title_line += f" ({row['year']})"
-
-                    st.markdown(f"### {title_line}")
-
-                    genres = ", ".join(row["genre_list"])
-                    if genres:
-                        st.caption(genres)
-
-                    st.write(row["overview"])
-
-                    st.markdown("**Why recommended:**")
-
-                    reasons = recommender.generate_baseline_reason(row, matched_movies)
-
-                    for reason in reasons:
-                        st.markdown(f"- {reason}")
-
-                    if scene_analysis and scene_analysis["motifs"]:
-                        scene_motifs = ", ".join(scene_analysis["motifs"])
-                        st.caption(
-                            f"Scene motifs detected: {scene_motifs}. "
-                            "They gently support the recommendation, but do not override your favorite movies."
-                        )
-
-                    if scene_analysis and any(scene_analysis.values()):
-                        st.caption(f"Scene feeling match: {row['scene_bonus']:.2f}")
-
-                    if use_embeddings and scene_text.strip():
-                        st.caption(f"Meaning-based scene match: {row['scene_semantic_similarity']:.2f}")
-
-                    st.caption(
-                        f"Rating: {row['vote_average']} | Popularity: {round(row['popularity'], 2)}"
-                    )
+if "recommendations" in st.session_state:
+    show_scene_analysis(
+        st.session_state.scene_analysis,
+        st.session_state.normalized_scene_text,
+        st.session_state.original_scene_text
+    )
+    show_recommendations(recommender)
